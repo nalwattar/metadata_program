@@ -1,6 +1,7 @@
 import sys 
-from Bio import SeqIO
+import Bio.SeqIO
 import csv
+import subprocess
 
 class SequenceMetadata(object):
 
@@ -14,22 +15,22 @@ class SequenceMetadata(object):
     def __str__(self):
     	return '(\'%s\',\'%s\',\'%s\')' % (self.idNumber, self.organism, self.accessionNumber)
 
-    def accessAnnotations(self, record):
-    	self.idNumber = record.id
-    	self.organism = record.annotations['organism']
-    	self.accessionNumber = record.annotations['accession']
-
     def makeRowDict(self):
     	return {'idNumber': self.idNumber, 'organism': self.organism, 'accessionNumber': self.accessionNumber}
         
     
-def readMetadata():
-    sequenceMetadata = SequenceMetadata(idNumber, organism, accessionNumber)
-    for record in (sys.argv[2], 'r'):
-        return record.idNumber, record.organism, record.accessionNumber
+def readMetadata(gbFnameList):
+    sequenceMetadataList = []
+    for gbFname in gbFnameList:
+        record = Bio.SeqIO.read(gbFname, 'genbank')
+        sequenceMetadata = SequenceMetadata(record.id, record.annotations['organism'], record.annotations['accessions'][0])
+        sequenceMetadataList.append(sequenceMetadata)
+    return sequenceMetadataList
 
-readMetadata()
-
+def test_readMetadata():
+    test = readMetadata(sys.argv[2:])
+    print(test)
+    
 def writeMetadataToCsv(sequenceMetadataList, csvFile):
     sequenceMetadataFieldnameList = ['idNumber', 'organism', 'accessionNumber']
     writer = csv.DictWriter(csvFile, fieldnames = sequenceMetadataFieldnameList, restval='no info available')
@@ -52,4 +53,6 @@ def runWriteMetadataToCsv():
 	sequenceMetadataList.append(sequenceMetadata)
 	with open(sys.argv[1], 'w') as csvFile:
 		writeMetadataToCsv(sequenceMetadataList, csvFile)
-runWriteMetadataToCsv()
+
+test_readMetadata()
+sys.exit(1)
