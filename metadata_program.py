@@ -36,7 +36,7 @@ def writeMetadataToCsv(sequenceMetadataList, csvFile):
     writer = csv.DictWriter(csvFile, fieldnames = sequenceMetadataFieldnameList, restval='no info available')
     writer.writeheader()
     for sequenceMetadata in sequenceMetadataList:
-        print('loop is running')
+        #print('loop is running')
         writer.writerow(sequenceMetadata.makeRowDict())
 
 def test_writeMetadataToCsv():
@@ -54,5 +54,11 @@ def runWriteMetadataToCsv():
 	with open(sys.argv[1], 'w') as csvFile:
 		writeMetadataToCsv(sequenceMetadataList, csvFile)
 
-test_readMetadata()
-sys.exit(1)
+#test_readMetadata()
+#check arguments needed to run with
+#if not exit/raise exception 
+#if true put csv name into suitable variable and gb names into a suitable variable
+sequenceMetadataList = readMetadata(sys.argv[2:])
+with open(sys.argv[1], 'w') as csvFile:
+	writeMetadataToCsv(sequenceMetadataList, csvFile)
+#sys.exit(1)
