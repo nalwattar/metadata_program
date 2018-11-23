@@ -1,5 +1,5 @@
 import sys 
-from Bio import SeqIO
+import Bio.SeqIO
 import csv
 
 class SequenceMetadata(object):
@@ -14,12 +14,11 @@ class SequenceMetadata(object):
     def __str__(self):
     	return '(\'%s\',\'%s\',\'%s\')' % (self.idNumber, self.organism, self.accessionNumber)
 
-    def accessAnnotations(self):
-    	for record in SeqIO.parse(sys.argv[2],'gb'):
-    		self.idNumber = record.id
-    		self.organism = record.annotations['organism']
-    		self.accessionNumber = record.annotations['accession']
-
+    def parseGenbankFile(self):
+    	with open(sys.argv[2], 'r') as genbankFile:
+    	    seqIO.parse(genbankFile, 'genbank')
+    	    return sequenceMetadata.idNumber, sequenceMetadata.organism, sequenceMetadata.accession
+    
     def makeRowDict(self):
     	return {'idNumber': self.idNumber, 'organism': self.organism, 'accessionNumber': self.accessionNumber}
         
@@ -32,18 +31,10 @@ def writeMetadataToCsv(sequenceMetadataList, csvFile):
         print('loop is running')
         writer.writerow(sequenceMetadata.makeRowDict())
 
-def test_writeMetadataToCsv():
-	sequenceMetadataList = []
-	sequenceMetadata = SequenceMetadata('1234', 'palm', '5678')
-	sequenceMetadataList.append(sequenceMetadata)
-	with open(sys.argv[1], 'w') as csvFile:
-		writeMetadataToCsv(sequenceMetadataList, csvFile)
-#test_writeMetadataToCsv()
+        
+sequenceMetadataList = []
+sequenceMetadata = SequenceMetadata('1234', 'palm', '5678')
+sequenceMetadataList.append(sequenceMetadata)
 
-def runWriteMetadataToCsv():
-	sequenceMetadataList = []
-	sequenceMetadata = SequenceMetadata(self.idNumber, self.organism, self.accessionNumber)
-	sequenceMetadataList.append(sequenceMetadata)
-	with open(sys.argv[1], 'w') as csvFile:
-		writeMetadataToCsv(sequenceMetadataList, csvFile)
-runWriteMetadataToCsv()
+with open(sys.argv[1], 'w') as csvFile:
+    writeMetadataToCsv(sequenceMetadataList, csvFile)
