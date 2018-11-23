@@ -28,7 +28,7 @@ def writeMetadataToCsv(sequenceMetadataList, csvFile):
     writer = csv.DictWriter(csvFile, fieldnames = sequenceMetadataFieldnameList, restval='no info available')
     writer.writeheader()
     for sequenceMetadata in sequenceMetadataList:
-        print('loop is running')
+        #print('loop is running')
         writer.writerow(sequenceMetadata.makeRowDict())
 
         
