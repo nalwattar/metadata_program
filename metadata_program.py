@@ -2,40 +2,41 @@ import sys
 import Bio.SeqIO
 import csv
 import subprocess
+import Bio.SeqRecord
+import unittest
 
 class SequenceMetadata(object):
 
     #Initialiser
 
-    def __init__(self, idNumber, organism, accessionNumber):
-    	self.idNumber = idNumber
-    	self.organism = organism
-    	self.accessionNumber = accessionNumber
-        
+    def __init__(self, seqRecord):
+        self.seqRecord = seqRecord
+
     def __str__(self):
-    	return '(\'%s\',\'%s\',\'%s\')' % (self.idNumber, self.organism, self.accessionNumber)
+    	return '(\'%s\',\'%s\',\'%s\')' % (self.seqRecord.id, self.seqRecord.annotations['organism'], self.seqRecord.annotations['accessions'][0], self.seq)
 
     def makeRowDict(self):
-    	return {'idNumber': self.idNumber, 'organism': self.organism, 'accessionNumber': self.accessionNumber}
+    	return {'idNumber': self.seqRecord.id, 'organism': self.seqRecord.annotations['organism'], 'accessionNumber': self.seqRecord.annotations['accessions'][0]}
         
     
 def readMetadata(gbFnameList):
     sequenceMetadataList = []
     for gbFname in gbFnameList:
+        #print(gbFname)
         record = Bio.SeqIO.read(gbFname, 'genbank')
-        sequenceMetadata = SequenceMetadata(record.id, record.annotations['organism'], record.annotations['accessions'][0])
+        sequenceMetadata = SequenceMetadata(record)
         sequenceMetadataList.append(sequenceMetadata)
     return sequenceMetadataList
 
 def test_readMetadata():
-    test = readMetadata(sys.argv[2:])
+    test = readMetadata(sys.argv[3:])
     print(test)
     
-def writeMetadataToCsv(sequenceMetadataList, csvFile):
+def writeMetadataToCsv(sequenceList, csvFile):
     sequenceMetadataFieldnameList = ['idNumber', 'organism', 'accessionNumber']
     writer = csv.DictWriter(csvFile, fieldnames = sequenceMetadataFieldnameList, restval='no info available')
     writer.writeheader()
-    for sequenceMetadata in sequenceMetadataList:
+    for sequenceMetadata in sequenceList:
         #print('loop is running')
         writer.writerow(sequenceMetadata.makeRowDict())
 
@@ -54,11 +55,34 @@ def runWriteMetadataToCsv():
 	with open(sys.argv[1], 'w') as csvFile:
 		writeMetadataToCsv(sequenceMetadataList, csvFile)
 
+def mergeSequencesAndConvertToFasta(sequenceList, fastaFile):
+    sequenceList = []
+    for sequence in sequenceList:
+        line = Bio.SeqIO.write(gbFname.seqRecord, fastaFile, 'fasta')
+        sequenceList.append(sequence)
+    return sequenceList
+
+def containSequenceListInSeqIOObject():
+    sequenceList = mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
+
+
+def pOpenForGuidetree():
+    p = subprocess.Popen(['mafft', '--auto', '--reorder', 'sequences.fasta'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines = True)
+    records = list(Bio.SeqIO.parse(p.stdout, 'fasta'))
+    #print(records)
+
+
+
+
 #test_readMetadata()
 #check arguments needed to run with
 #if not exit/raise exception 
 #if true put csv name into suitable variable and gb names into a suitable variable
-sequenceMetadataList = readMetadata(sys.argv[2:])
-with open(sys.argv[1], 'w') as csvFile:
-	writeMetadataToCsv(sequenceMetadataList, csvFile)
+sequenceList = readMetadata(sys.argv[3:])
+#with open(sys.argv[1], 'w') as csvFile:
+#	writeMetadataToCsv(sequenceList, csvFile)
+#with open(sys.argv[2], 'w') as fastaFile:
+#    mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
 #sys.exit(1)
+mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
+#pOpenForGuidetree()
