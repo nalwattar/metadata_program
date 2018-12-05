@@ -4,6 +4,7 @@ import csv
 import subprocess
 import Bio.SeqRecord
 import unittest
+import os
 
 class SequenceMetadata(object):
 
@@ -63,11 +64,18 @@ def mergeSequencesAndConvertToFasta(sequencesList, fastaFile):
     return sequencesList
 
 def pOpenForGuidetree(sequencesList, fastaFile):
+	p = subprocess.Popen(['mafft', '--auto', '--reorder', '-'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines = True)
+	pid = os.fork()
+
+	if pid >= 0:
+		p.stdout.close()
+		Bio.SeqIO.write(sequencesList, p.stdin, 'fasta')
+		p.stdin.close()
+		os.exit
+
 	sequencesList = mergeSequencesAndConvertToFasta(sequencesList, fastaFile)
-    p = subprocess.Popen(['mafft', '--auto', '--reorder', '-'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines = True)
-    records = list(Bio.SeqIO.parse(p.stdout, 'fasta'))
-    Bio.SeqIO.write(sequencesList, p.stdin, 'fasta')
-    #print(records)
+	records = list(Bio.SeqIO.parse(p.stdout, 'fasta'))
+	#print(records)
 
 #test_readMetadata()
 #check arguments needed to run with
