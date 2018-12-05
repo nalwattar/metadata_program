@@ -32,11 +32,11 @@ def test_readMetadata():
     test = readMetadata(sys.argv[3:])
     print(test)
     
-def writeMetadataToCsv(sequenceList, csvFile):
+def writeMetadataToCsv(sequencesList, csvFile):
     sequenceMetadataFieldnameList = ['idNumber', 'organism', 'accessionNumber']
     writer = csv.DictWriter(csvFile, fieldnames = sequenceMetadataFieldnameList, restval='no info available')
     writer.writeheader()
-    for sequenceMetadata in sequenceList:
+    for sequenceMetadata in sequencesList:
         #print('loop is running')
         writer.writerow(sequenceMetadata.makeRowDict())
 
@@ -55,34 +55,29 @@ def runWriteMetadataToCsv():
 	with open(sys.argv[1], 'w') as csvFile:
 		writeMetadataToCsv(sequenceMetadataList, csvFile)
 
-def mergeSequencesAndConvertToFasta(sequenceList, fastaFile):
-    sequenceList = []
-    for sequence in sequenceList:
+def mergeSequencesAndConvertToFasta(sequencesList, fastaFile):
+    sequencesList = []
+    for sequence in sequencesList:
         line = Bio.SeqIO.write(gbFname.seqRecord, fastaFile, 'fasta')
-        sequenceList.append(sequence)
-    return sequenceList
+        sequencesList.append(sequence)
+    return sequencesList
 
-def containSequenceListInSeqIOObject():
-    sequenceList = mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
-
-
-def pOpenForGuidetree():
-    p = subprocess.Popen(['mafft', '--auto', '--reorder', 'sequences.fasta'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines = True)
+def pOpenForGuidetree(sequencesList, fastaFile):
+	sequencesList = mergeSequencesAndConvertToFasta(sequencesList, fastaFile)
+    p = subprocess.Popen(['mafft', '--auto', '--reorder', '-'], stdin = subprocess.PIPE, stdout = subprocess.PIPE, universal_newlines = True)
     records = list(Bio.SeqIO.parse(p.stdout, 'fasta'))
+    Bio.SeqIO.write(sequencesList, p.stdin, 'fasta')
     #print(records)
-
-
-
 
 #test_readMetadata()
 #check arguments needed to run with
 #if not exit/raise exception 
 #if true put csv name into suitable variable and gb names into a suitable variable
-sequenceList = readMetadata(sys.argv[3:])
+sequencesList = readMetadata(sys.argv[3:])
 #with open(sys.argv[1], 'w') as csvFile:
-#	writeMetadataToCsv(sequenceList, csvFile)
+#	writeMetadataToCsv(sequencesList, csvFile)
 #with open(sys.argv[2], 'w') as fastaFile:
-#    mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
+#    mergeSequencesAndConvertToFasta(sequencesList, fastaFile)
 #sys.exit(1)
-mergeSequencesAndConvertToFasta(sequenceList, fastaFile)
+mergeSequencesAndConvertToFasta(sequencesList, fastaFile)
 #pOpenForGuidetree()
